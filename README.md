@@ -44,11 +44,13 @@ Cuando `keytool` solicite la contraseña de clave, pulsa Enter para reutilizar l
 $env:APP_AUTH_USERNAME = "usuario"
 $env:APP_AUTH_PASSWORD = Read-Host "Contraseña local"
 $env:APP_JWT_SECRET = Read-Host "Secreto JWT (32 caracteres o más)"
+$env:APP_CORS_ALLOWED_ORIGIN = "http://localhost:4200"
 $env:SERVER_SSL_KEY_STORE_PASSWORD = Read-Host "Contraseña del keystore"
 mvn spring-boot:run
 ```
 
 El servicio escucha únicamente en HTTPS en el puerto `8443`; no se inicia un conector HTTP.
+Por defecto CORS permite solo `http://localhost:4200`; cambia `APP_CORS_ALLOWED_ORIGIN` al origen exacto de Angular si usa otro puerto o está desplegado. No se permite cualquier origen (`*`).
 
 ## Probar autenticación
 
