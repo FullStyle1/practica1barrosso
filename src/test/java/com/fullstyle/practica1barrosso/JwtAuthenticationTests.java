@@ -57,13 +57,17 @@ class JwtAuthenticationTests {
                         .content("""
                                 {"username":"test-user","password":"incorrecta"}
                                 """))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("Credenciales inválidas."));
     }
 
     @Test
     void rejectsInvalidBearerToken() throws Exception {
         mockMvc.perform(get("/api/private")
                         .header("Authorization", "Bearer token-invalido"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("Autenticación requerida o token inválido."));
     }
 }
