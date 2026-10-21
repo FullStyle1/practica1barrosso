@@ -3,6 +3,8 @@ package com.fullstyle.practica1barrosso;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
     private static final long TOKEN_VALIDITY_MINUTES = 15;
 
     private final AuthenticationManager authenticationManager;
@@ -40,9 +43,12 @@ public class AuthController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         } catch (AuthenticationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            LOGGER.warn("Login rejected due to invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiErrorResponse.of(HttpStatus.UNAUTHORIZED, "Credenciales inválidas."));
         }
 
+        LOGGER.info("JWT issued for user {}", authentication.getName());
         Instant now = Instant.now();
         Instant expiresAt = now.plus(TOKEN_VALIDITY_MINUTES, ChronoUnit.MINUTES);
         JwtClaimsSet claims = JwtClaimsSet.builder()
