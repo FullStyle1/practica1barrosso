@@ -11,7 +11,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "app.auth.username=test-user",
+        "app.auth.password=Test-password-123!",
+        "app.jwt.secret=01234567890123456789012345678901"
+})
 @AutoConfigureMockMvc
 @Import(SecurityConfig.class)
 class SecurityConfigTests {
@@ -20,7 +24,7 @@ class SecurityConfigTests {
     private MockMvc mockMvc;
 
     @Test
-    void allowsHealthEndpointWithoutAuthentication() throws Exception {
+    void doesNotRequireAuthenticationForHealthPath() throws Exception {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isNotFound());
     }
