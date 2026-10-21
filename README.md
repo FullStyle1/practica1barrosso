@@ -63,6 +63,8 @@ curl.exe -k https://localhost:8443/api/private -H "Authorization: Bearer $token"
 
 El certificado autofirmado es solo para desarrollo local; no desactives la validación de certificados en clientes de producción. `/api/auth/**` es público; las demás rutas requieren un Bearer token válido. `/api/admin/**` además requiere el rol `ADMIN`.
 
+Los errores de acceso devuelven JSON con `status`, `error`, `message` y `timestamp`. Se registran los intentos de login fallidos y los rechazos 401/403 sin guardar contraseñas ni tokens. Los errores de handshake TLS ocurren antes de HTTP, por lo que no pueden incluir una respuesta JSON de la API.
+
 Comprueba el handshake con TLS 1.2 y TLS 1.3:
 
 ```powershell

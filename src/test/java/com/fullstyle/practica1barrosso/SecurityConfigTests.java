@@ -9,6 +9,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
@@ -40,13 +41,17 @@ class SecurityConfigTests {
     @Test
     void rejectsProtectedEndpointWithoutAuthentication() throws Exception {
         mockMvc.perform(get("/api/private"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("Autenticación requerida o token inválido."));
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void deniesAdminEndpointToUserWithoutAdminRole() throws Exception {
         mockMvc.perform(get("/api/admin/private"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("No tienes permisos para acceder a este recurso."));
     }
 }
