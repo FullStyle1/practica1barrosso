@@ -29,7 +29,8 @@ class SecurityConfigTests {
     @Test
     void doesNotRequireAuthenticationForHealthPath() throws Exception {
         mockMvc.perform(get("/api/health"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test

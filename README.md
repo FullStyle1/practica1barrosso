@@ -77,4 +77,5 @@ curl.exe -k --tlsv1.3 --tls-max 1.3 https://localhost:8443/api/private
 ```
 
 ## Endpoint
+
 - `GET /api/health` devuelve `{"status":"UP"}`.
