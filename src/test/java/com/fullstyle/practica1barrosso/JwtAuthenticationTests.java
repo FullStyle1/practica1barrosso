@@ -18,7 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "app.auth.username=test-user",
         "app.auth.password=Test-password-123!",
-        "app.jwt.secret=01234567890123456789012345678901"
+        "app.jwt.secret=01234567890123456789012345678901",
+        "server.ssl.enabled=false",
+        "server.ssl.key-store-password=test-password"
 })
 @AutoConfigureMockMvc
 class JwtAuthenticationTests {

@@ -19,18 +19,36 @@ mvn spring-boot:run
 mvn test
 ```
 
-Esta etapa incluye la base de Spring Boot, reglas de Spring Security y autenticación JWT. TLS/SSL se agregará en un paso posterior.
+Esta etapa incluye la base de Spring Boot, reglas de Spring Security, autenticación JWT y HTTPS local con TLS 1.2/1.3.
 
 ## Configuración local
 
-En PowerShell, configura las credenciales locales y un secreto JWT de al menos 32 caracteres:
+El certificado de desarrollo y sus claves no se guardan en Git. En PowerShell, crea un keystore PKCS12 local:
+
+```powershell
+New-Item -ItemType Directory -Force certs
+keytool -genkeypair `
+  -alias localhost `
+  -keyalg RSA `
+  -keysize 2048 `
+  -storetype PKCS12 `
+  -keystore certs\localhost.p12 `
+  -validity 365 `
+  -dname "CN=localhost" `
+  -ext "SAN=dns:localhost,ip:127.0.0.1"
+```
+
+Cuando `keytool` solicite la contraseña de clave, pulsa Enter para reutilizar la del keystore. Usa esa contraseña en `SERVER_SSL_KEY_STORE_PASSWORD`. Configura además las credenciales locales y un secreto JWT de al menos 32 caracteres:
 
 ```powershell
 $env:APP_AUTH_USERNAME = "usuario"
 $env:APP_AUTH_PASSWORD = Read-Host "Contraseña local"
 $env:APP_JWT_SECRET = Read-Host "Secreto JWT (32 caracteres o más)"
+$env:SERVER_SSL_KEY_STORE_PASSWORD = Read-Host "Contraseña del keystore"
 mvn spring-boot:run
 ```
+
+El servicio escucha únicamente en HTTPS en el puerto `8443`; no se inicia un conector HTTP.
 
 ## Probar autenticación
 
@@ -38,8 +56,16 @@ Solicita un token con `POST /api/auth/token` y JSON `{"username":"usuario","pass
 
 ```powershell
 $body = @{ username = $env:APP_AUTH_USERNAME; password = $env:APP_AUTH_PASSWORD } | ConvertTo-Json
-$token = (Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/auth/token -ContentType "application/json" -Body $body).accessToken
-Invoke-RestMethod -Uri http://localhost:8080/api/private -Headers @{ Authorization = "Bearer $token" }
+$tokenResponse = $body | curl.exe -k -sS -X POST https://localhost:8443/api/auth/token -H "Content-Type: application/json" --data-binary "@-" | ConvertFrom-Json
+$token = $tokenResponse.accessToken
+curl.exe -k https://localhost:8443/api/private -H "Authorization: Bearer $token"
 ```
 
-`/api/auth/**` es público; las demás rutas requieren un Bearer token válido. `/api/admin/**` además requiere el rol `ADMIN`. La API sigue usando HTTP en esta etapa; no envíes credenciales por una red no confiable hasta que se configure TLS/SSL.
+El certificado autofirmado es solo para desarrollo local; no desactives la validación de certificados en clientes de producción. `/api/auth/**` es público; las demás rutas requieren un Bearer token válido. `/api/admin/**` además requiere el rol `ADMIN`.
+
+Comprueba el handshake con TLS 1.2 y TLS 1.3:
+
+```powershell
+curl.exe -k --tlsv1.2 --tls-max 1.2 https://localhost:8443/api/private
+curl.exe -k --tlsv1.3 --tls-max 1.3 https://localhost:8443/api/private
+```
