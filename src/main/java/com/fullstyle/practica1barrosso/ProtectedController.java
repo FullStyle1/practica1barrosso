@@ -12,4 +12,9 @@ public class ProtectedController {
     public Map<String, String> privateEndpoint() {
         return Map.of("message", "Acceso autorizado");
     }
+
+    @GetMapping("/api/admin/private")
+    public Map<String, String> adminEndpoint() {
+        return Map.of("message", "Acceso de administrador");
+    }
 }

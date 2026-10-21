@@ -43,6 +43,7 @@ Cuando `keytool` solicite la contraseña de clave, pulsa Enter para reutilizar l
 ```powershell
 $env:APP_AUTH_USERNAME = "usuario"
 $env:APP_AUTH_PASSWORD = Read-Host "Contraseña local"
+$env:APP_AUTH_ROLE = "USER"
 $env:APP_JWT_SECRET = Read-Host "Secreto JWT (32 caracteres o más)"
 $env:APP_CORS_ALLOWED_ORIGIN = "http://localhost:4200"
 $env:SERVER_SSL_KEY_STORE_PASSWORD = Read-Host "Contraseña del keystore"
@@ -64,6 +65,7 @@ curl.exe -k https://localhost:8443/api/private -H "Authorization: Bearer $token"
 ```
 
 El certificado autofirmado es solo para desarrollo local; no desactives la validación de certificados en clientes de producción. `/api/auth/**` es público; las demás rutas requieren un Bearer token válido. `/api/admin/**` además requiere el rol `ADMIN`.
+El usuario en memoria tiene un único rol configurable: `USER` (predeterminado) o `ADMIN`. Para probar la ruta administrativa, cambia `APP_AUTH_ROLE` a `ADMIN`; una aplicación real debe asignar roles por usuario desde su persistencia.
 
 Los errores de acceso devuelven JSON con `status`, `error`, `message` y `timestamp`. Se registran los intentos de login fallidos y los rechazos 401/403 sin guardar contraseñas ni tokens. Los errores de handshake TLS ocurren antes de HTTP, por lo que no pueden incluir una respuesta JSON de la API.
 

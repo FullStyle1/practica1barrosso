@@ -1,6 +1,8 @@
 package com.fullstyle.practica1barrosso;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -36,16 +40,33 @@ public class JwtConfig {
     UserDetailsService userDetailsService(
             @Value("${app.auth.username}") String username,
             @Value("${app.auth.password}") String password,
+            @Value("${app.auth.role}") String role,
             PasswordEncoder passwordEncoder) {
         if (username.isBlank() || password.isBlank()) {
             throw new IllegalStateException("APP_AUTH_USERNAME and APP_AUTH_PASSWORD must not be blank");
         }
 
+        String normalizedRole = role.toUpperCase(Locale.ROOT);
+        if (!Set.of("USER", "ADMIN").contains(normalizedRole)) {
+            throw new IllegalArgumentException("APP_AUTH_ROLE must be USER or ADMIN");
+        }
+
         UserDetails user = User.withUsername(username)
                 .password(passwordEncoder.encode(password))
-                .roles("USER")
+                .roles(normalizedRole)
                 .build();
         return new InMemoryUserDetailsManager(user);
+    }
+
+    @Bean
+    JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthoritiesClaimName("roles");
+        authoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        return converter;
     }
 
     @Bean
