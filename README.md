@@ -75,3 +75,6 @@ Comprueba el handshake con TLS 1.2 y TLS 1.3:
 curl.exe -k --tlsv1.2 --tls-max 1.2 https://localhost:8443/api/private
 curl.exe -k --tlsv1.3 --tls-max 1.3 https://localhost:8443/api/private
 ```
+
+## Endpoint
+- `GET /api/health` devuelve `{"status":"UP"}`.
