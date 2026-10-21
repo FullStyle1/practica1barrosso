@@ -19,4 +19,11 @@ mvn spring-boot:run
 mvn test
 ```
 
-Esta primera etapa contiene únicamente el esqueleto inicial de Spring Boot. No incluye todavía autenticación, Spring Security ni configuración TLS/SSL.
+Esta etapa incluye la base de Spring Boot y reglas iniciales de Spring Security. La autenticación con tokens y TLS/SSL se agregarán en pasos posteriores.
+
+## Reglas de acceso iniciales
+
+- `/api/auth/**` es público.
+- `GET /api/health` es público.
+- `/api/admin/**` requiere el rol `ADMIN`.
+- Las demás rutas requieren autenticación.
